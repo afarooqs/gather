@@ -64,6 +64,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
+  enum_to_string:
+    dependency: transitive
+    description:
+      name: enum_to_string
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.14"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.6"
   fake_async:
     dependency: transitive
     description:
@@ -130,6 +144,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.0"
+  permission_handler:
+    dependency: transitive
+    description:
+      name: permission_handler
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.1.0+2"
+  permission_handler_platform_interface:
+    dependency: transitive
+    description:
+      name: permission_handler_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.2"
+  plugin_platform_interface:
+    dependency: transitive
+    description:
+      name: plugin_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.3"
   provider:
     dependency: transitive
     description:
@@ -184,6 +219,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.19"
+  twilio_programmable_video:
+    dependency: "direct main"
+    description:
+      name: twilio_programmable_video
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.6.4+1"
+  twilio_programmable_video_platform_interface:
+    dependency: transitive
+    description:
+      name: twilio_programmable_video_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.3"
   typed_data:
     dependency: transitive
     description:
@@ -214,4 +263,4 @@ packages:
     version: "7.0.0+7"
 sdks:
   dart: ">=2.12.0-0.0 <3.0.0"
-  flutter: ">=1.16.0"
+  flutter: ">=1.17.0"

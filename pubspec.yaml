@@ -25,6 +25,7 @@ dependencies:
     sdk: flutter
   youtube_player_flutter: ^7.0.0+7
   flutter_volume_slider: ^1.0.6
+  twilio_programmable_video: ^0.6.4+1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
