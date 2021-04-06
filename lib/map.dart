@@ -1,113 +1,191 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:flutter_volume_slider/flutter_volume_slider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:places_autocomplete/src/blocs/application_bloc.dart';
+import 'package:places_autocomplete/src/models/place.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(MyApp());
+class HomeScreen extends StatefulWidget {
+  HomeScreen({Key key}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+class _HomeScreenState extends State<HomeScreen> {
+  Completer<GoogleMapController> _mapController = Completer();
+  StreamSubscription locationSubscription;
+  StreamSubscription boundsSubscription;
+  final _locationController = TextEditingController();
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Gather Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.deepPurple,
-      ),
-      home: MyHomePage(title: 'Gather for prayer'),
-    );
+  void initState() {
+    final applicationBloc =
+        Provider.of<ApplicationBloc>(context, listen: false);
+
+    //Listen for selected Location
+    locationSubscription =
+        applicationBloc.selectedLocation.stream.listen((place) {
+      if (place != null) {
+        _locationController.text = place.name;
+        _goToPlace(place);
+      } else
+        _locationController.text = "";
+    });
+
+    applicationBloc.bounds.stream.listen((bounds) async {
+      final GoogleMapController controller = await _mapController.future;
+      controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
+    });
+    super.initState();
   }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  static String myVideoId = 'ED7-a2gquSQ';
-
-  // Initiate the Youtube player controller
-  YoutubePlayerController _controller = YoutubePlayerController(
-    initialVideoId: myVideoId,
-    flags: YoutubePlayerFlags(
-      autoPlay: true,
-      mute: false,
-    ),
-  );
+  void dispose() {
+    final applicationBloc =
+        Provider.of<ApplicationBloc>(context, listen: false);
+    applicationBloc.dispose();
+    _locationController.dispose();
+    locationSubscription.cancel();
+    boundsSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    final applicationBloc = Provider.of<ApplicationBloc>(context);
     return Scaffold(
-      appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          //title: Text(widget.title),
-          title: Row(
-        //mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/nyu-ic.png',
-            fit: BoxFit.scaleDown,
-            height: 32,
-          ),
-          Container(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Gather - NYU Islamic Center'))
-        ],
-      )
-          //Image.asset('./nyu-ic.png', fit: BoxFit.fitHeight),
-          ),
-      body: Container(
-        // Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        //children: [
-        child: Padding(
-          padding: EdgeInsets.all(10.0),
-          child: ListView(children: <Widget>[
-            YoutubePlayer(
-              controller: _controller,
-              liveUIColor: Colors.amber,
-            ),
-            FlutterVolumeSlider(
-              display: Display.HORIZONTAL,
-              sliderActiveColor: Colors.blue,
-              sliderInActiveColor: Colors.grey,
-            )
-            //],
-          ]),
-        ),
+        body: (applicationBloc.currentLocation == null)
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _locationController,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: InputDecoration(
+                        hintText: 'Search by City',
+                        suffixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: (value) => applicationBloc.searchPlaces(value),
+                      onTap: () => applicationBloc.clearSelectedLocation(),
+                    ),
+                  ),
+                  Stack(
+                    children: [
+                      Container(
+                        height: 300.0,
+                        child: GoogleMap(
+                          mapType: MapType.normal,
+                          myLocationEnabled: true,
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(
+                                applicationBloc.currentLocation.latitude,
+                                applicationBloc.currentLocation.longitude),
+                            zoom: 14,
+                          ),
+                          onMapCreated: (GoogleMapController controller) {
+                            _mapController.complete(controller);
+                          },
+                          markers: Set<Marker>.of(applicationBloc.markers),
+                        ),
+                      ),
+                      if (applicationBloc.searchResults != null &&
+                          applicationBloc.searchResults.length != 0)
+                        Container(
+                            height: 300.0,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(.6),
+                                backgroundBlendMode: BlendMode.darken)),
+                      if (applicationBloc.searchResults != null)
+                        Container(
+                          height: 300.0,
+                          child: ListView.builder(
+                              itemCount: applicationBloc.searchResults.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  title: Text(
+                                    applicationBloc
+                                        .searchResults[index].description,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  onTap: () {
+                                    applicationBloc.setSelectedLocation(
+                                        applicationBloc
+                                            .searchResults[index].placeId);
+                                  },
+                                );
+                              }),
+                        ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('Find Nearest',
+                        style: TextStyle(
+                            fontSize: 25.0, fontWeight: FontWeight.bold)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Wrap(
+                      spacing: 8.0,
+                      children: [
+                        FilterChip(
+                          label: Text('Church'),
+                          onSelected: (val) =>
+                              applicationBloc.togglePlaceType('church', val),
+                          selected: applicationBloc.placeType == 'church',
+                          selectedColor: Colors.blueGrey,
+                        ),
+                        FilterChip(
+                            label: Text('Mosque'),
+                            onSelected: (val) =>
+                                applicationBloc.togglePlaceType('mosque', val),
+                            selected: applicationBloc.placeType == 'mosque',
+                            selectedColor: Colors.green),
+                        FilterChip(
+                            label: Text('Temple'),
+                            onSelected: (val) =>
+                                applicationBloc.togglePlaceType('temple', val),
+                            selected: applicationBloc.placeType == 'temple',
+                            selectedColor: Colors.yellowAccent),
+                      ],
+                    ),
+                  )
+                ],
+              ));
+  }
+
+  Future<void> _goToPlace(Place place) async {
+    final GoogleMapController controller = await _mapController.future;
+    controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+            target: LatLng(
+                place.geometry.location.lat, place.geometry.location.lng),
+            zoom: 14.0),
       ),
     );
   }
+
+  Widget _wrapWithBanner(Widget child) {
+  return Banner(
+    child: child,
+    location: BannerLocation.topStart,
+    message: 'BETA',
+    color: Colors.green.withOpacity(0.6),
+    textStyle: TextStyle(
+        fontWeight: FontWeight.w700, fontSize: 12.0, letterSpacing: 1.0),
+    textDirection: TextDirection.ltr,
+  );
+}
 }
