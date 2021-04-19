@@ -1,15 +1,12 @@
-# Google Places Autocomplete
+# Gather
+A virtual space for spiritual meetings
 
-A Flutter Application utilizing Google Maps, Places Autocomplete, and Geolocator
+## Designed Using
+* Flutter
+* Agora.io
+* Google Maps API
 
-## Getting Started
-
-You will need to have a Google project, enable the Android SDK, IOS SDK, and Places API in your GCloud Console.
-
-Obtain an API key and replace the YOUR_KEY placeholders in 
-- ios/Runner/AppDelegate.swift
-- android/app/src/main/AndroidManifest.xml
-- lib/services/places_service.dart
-
-## Video
--Part 1 https://youtu.be/sL74UNLssV8
+## Building the project
+* Use Visual Studio Code
+* Use Android Emulator to build
+ 
