@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:places_autocomplete/src/blocs/application_bloc.dart';
 import 'package:places_autocomplete/src/models/place.dart';
 import 'package:provider/provider.dart';
+import 'package:places_autocomplete/video.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key}) : super(key: key);
@@ -25,9 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final applicationBloc =
         Provider.of<ApplicationBloc>(context, listen: false);
 
-
     //Listen for selected Location
-    locationSubscription = applicationBloc.selectedLocation.stream.listen((place) {
+    locationSubscription =
+        applicationBloc.selectedLocation.stream.listen((place) {
       if (place != null) {
         _locationController.text = place.name;
         _goToPlace(place);
@@ -41,8 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     super.initState();
   }
-
-
 
   @override
   void dispose() {
@@ -86,10 +85,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           mapType: MapType.normal,
                           myLocationEnabled: true,
                           initialCameraPosition: CameraPosition(
-                            target: LatLng(
-                                applicationBloc.currentLocation.latitude,
-                                applicationBloc.currentLocation.longitude),
-                            zoom: 14,
+                            target: LatLng(40.730166, -73.9980533),
+                            zoom: 16,
                           ),
                           onMapCreated: (GoogleMapController controller) {
                             _mapController.complete(controller);
@@ -142,51 +139,39 @@ class _HomeScreenState extends State<HomeScreen> {
                       spacing: 8.0,
                       children: [
                         FilterChip(
-                          label: Text('Campground'),
-                          onSelected: (val) => applicationBloc.togglePlaceType(
-                              'campground', val),
-                          selected:
-                              applicationBloc.placeType  =='campground',
-                          selectedColor: Colors.blue,
+                          label: Text('Church'),
+                          onSelected: (val) =>
+                              applicationBloc.togglePlaceType('church', val),
+                          selected: applicationBloc.placeType == 'church',
+                          selectedColor: Colors.blueGrey,
                         ),
                         FilterChip(
-                            label: Text('Locksmith'),
-                            onSelected: (val) => applicationBloc
-                                .togglePlaceType('locksmith', val),
-                            selected: applicationBloc.placeType  =='locksmith',
-                            selectedColor: Colors.blue),
-                        FilterChip(
-                            label: Text('Pharmacy'),
-                            onSelected: (val) => applicationBloc
-                                .togglePlaceType('pharmacy', val),
-                            selected:
-                            applicationBloc.placeType  =='pharmacy',
-                            selectedColor: Colors.blue),
-                        FilterChip(
-                            label: Text('Pet Store'),
-                            onSelected: (val) => applicationBloc
-                                .togglePlaceType('pet_store', val),
-                            selected: applicationBloc.placeType  =='pet_store',
-                            selectedColor: Colors.blue),
-                        FilterChip(
-                            label: Text('Lawyer'),
+                            label: Text('Mosque'),
                             onSelected: (val) =>
-                                applicationBloc
-                                    .togglePlaceType('lawyer', val),
-                            selected:
-                            applicationBloc.placeType  =='lawyer',
-                            selectedColor: Colors.blue),
+                                applicationBloc.togglePlaceType('mosque', val),
+                            selected: applicationBloc.placeType == 'mosque',
+                            selectedColor: Colors.green),
                         FilterChip(
-                            label: Text('Bank'),
+                            label: Text('Temple'),
                             onSelected: (val) =>
-                                applicationBloc
-                                    .togglePlaceType('bank', val),
-                            selected:
-                            applicationBloc.placeType  =='bank',
-                            selectedColor: Colors.blue),
+                                applicationBloc.togglePlaceType('temple', val),
+                            selected: applicationBloc.placeType == 'temple',
+                            selectedColor: Colors.yellowAccent),
                       ],
                     ),
-                  )
+                  ),
+                  Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        child: Text('Join a Prayer Meeting'),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => VideoPage()),
+                          );
+                        },
+                      )),
                 ],
               ));
   }
@@ -200,6 +185,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 place.geometry.location.lat, place.geometry.location.lng),
             zoom: 14.0),
       ),
+    );
+  }
+
+  Widget _wrapWithBanner(Widget child) {
+    return Banner(
+      child: child,
+      location: BannerLocation.topStart,
+      message: 'BETA',
+      color: Colors.green.withOpacity(0.6),
+      textStyle: TextStyle(
+          fontWeight: FontWeight.w700, fontSize: 12.0, letterSpacing: 1.0),
+      textDirection: TextDirection.ltr,
     );
   }
 }

@@ -15,10 +15,10 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => ApplicationBloc(),
       child: MaterialApp(
-        title: 'Flutter Demo',
+        debugShowCheckedModeBanner: false,
+        title: 'Gather: For Prayer',
         home: HomeScreen(),
       ),
     );
   }
 }
-

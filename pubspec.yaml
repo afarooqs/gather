@@ -32,6 +32,8 @@ dependencies:
   geolocator: ^6.2.0
   http: ^0.12.2
   google_maps_flutter: ^1.2.0
+  youtube_player_flutter: ^7.0.0+7
+  flutter_volume_slider: ^1.0.6
 
 dev_dependencies:
   flutter_test:
